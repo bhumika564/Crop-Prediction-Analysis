@@ -32,7 +32,7 @@ function Sidebar({ activeTab }) {
         </Link>
       </nav>
 
-      <div className="feedback-box">
+      {/* <div className="feedback-box">
         <button>About Dev</button>
         <br />
         <a
@@ -42,7 +42,7 @@ function Sidebar({ activeTab }) {
         >
           Kartikdixit.vercel.app
         </a>
-      </div>
+      </div> */}
     </aside>
   );
 }
