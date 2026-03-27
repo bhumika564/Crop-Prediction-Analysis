@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # Backend Service
+  ml-api-backend:  # <--- YAHAN CHANGE KIYA HAI (Pehle 'backend' tha)
+    build: ./backend  # Builds from the backend folder
+    container_name: ml-api-backend
+    ports:
+      - "5000:5000"
+    networks:
+      - crops-app-network
+    restart: always
+
+  # Frontend Service
+  frontend:
+    build: ./frontend # Builds from the frontend folder
+    container_name: react-frontend
+    ports:
+      - "80:80"
+    networks:
+      - crops-app-network
+    depends_on:
+      - ml-api-backend  # <--- YAHAN BHI CHANGE KIYA HAI taki naye naam se match kare
+    restart: always
+
+# Define the custom network
+networks:
+  crops-app-network:
+    driver: bridge

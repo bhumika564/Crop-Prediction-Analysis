@@ -7,8 +7,8 @@ function Sidebar({ activeTab }) {
   return (
     <aside className="sidebar">
       <div className="logo">
-        <img src="/images/logo_new.png" alt="Cropify Logo" />
-        <span>Cropify</span>
+        <img src="/images/logo_new.png" alt="CropXpert Logo" />
+        <span>CropXpert</span>
       </div>
 
       <nav className="nav-links">

@@ -39,74 +39,82 @@ function Dashboard() {
     }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const {
-    crop_name,
-    region,
-    year,
-    month,
-    rainfall,
-    crop_variety,
-    area_sown,
-    yield: yield_kg,
-    irrigated_percent,
-    fertilizer_used,
-    msP,
-    market_demand,
-    export_demand,
-    input_cost,
-    transport_cost,
-    govt_scheme_active,
-    cold_storage_available,
-    mandi_open,
-  } = formData;
+    const {
+      crop_name,
+      region,
+      year,
+      month,
+      rainfall,
+      crop_variety,
+      area_sown,
+      yield: yield_kg,
+      irrigated_percent,
+      fertilizer_used,
+      msP,
+      market_demand,
+      export_demand,
+      input_cost,
+      transport_cost,
+      govt_scheme_active,
+      cold_storage_available,
+      mandi_open,
+      modelChoice,
+    } = formData;
 
-  // Compose cleaned-up data with proper types
-  const data = {
-    crop_name: crop_name,
-    region: region,
-    year: Number(year),
-    month: Number(month),
-    rainfall: parseFloat(rainfall),
-    crop_variety,
-    area_sown: parseFloat(area_sown),
-    yield: parseFloat(yield_kg),
-    irrigated_percent: parseFloat(irrigated_percent),
-    fertilizer_used: parseFloat(fertilizer_used),
-    msP: parseFloat(msP),
-    market_demand: parseFloat(market_demand),
-    export_demand: parseFloat(export_demand),
-    input_cost: parseFloat(input_cost),
-    transport_cost: parseFloat(transport_cost),
-    govt_scheme_active: govt_scheme_active.toLowerCase(),
-    cold_storage_available: cold_storage_available.toLowerCase(),
-    mandi_open: mandi_open.toLowerCase(),
+    const data = {
+      crop_name: crop_name,
+      region: region,
+      year: Number(year),
+      month: Number(month),
+      rainfall: parseFloat(rainfall),
+      crop_variety,
+      area_sown: parseFloat(area_sown),
+      yield: parseFloat(yield_kg),
+      irrigated_percent: parseFloat(irrigated_percent),
+      fertilizer_used: parseFloat(fertilizer_used),
+      msP: parseFloat(msP),
+      market_demand: parseFloat(market_demand),
+      export_demand: parseFloat(export_demand),
+      input_cost: parseFloat(input_cost),
+      transport_cost: parseFloat(transport_cost),
+      govt_scheme_active: govt_scheme_active ? govt_scheme_active.toLowerCase() : "",
+      cold_storage_available: cold_storage_available ? cold_storage_available.toLowerCase() : "",
+      mandi_open: mandi_open ? mandi_open.toLowerCase() : "",
+    };
+
+    // ✅ FIX: Added http://localhost:5000 so frontend knows exactly where to go!
+    const selectedModel = modelChoice.toLowerCase(); 
+    const endpoint = `http://localhost:5000/api/model/${selectedModel}/predict`; 
+
+    console.log(`Sending request to: ${endpoint}`);
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Server response:", result);
+
+      setPredictedPrice(result.predicted_price);
+      setAccuracy(result.model_r2_score);
+      setTimeElapsed(result.elapsed_time_sec);
+    } catch (error) {
+      console.error("Prediction failed:", error);
+      alert(`Prediction Failed. Check console for error details. Cause: ${error.message}`);
+    }
   };
-
-  const endpoint = "http://localhost:5000/api/model/xgboost/predict/";
-
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-    console.log("Server response:", result);
-
-    setPredictedPrice(result.predicted_price);
-    setAccuracy(result.model_r2_score);
-    setTimeElapsed(result.elapsed_time_sec);
-  } catch (error) {
-    console.error("Prediction failed:", error);
-  }
-};
-
 
   return (
     <div className="container">
@@ -158,7 +166,6 @@ const handleSubmit = async (e) => {
                     <option>Wheat</option>
                     <option>Rice</option>
                     <option>Corn</option>
-                    {/* Add more if needed */}
                   </select>
                 </label>
 
@@ -198,22 +205,18 @@ const handleSubmit = async (e) => {
                     required
                   >
                     <option value="">Select month</option>
-                    {[
-                      "January",
-                      "February",
-                      "March",
-                      "April",
-                      "May",
-                      "June",
-                      "July",
-                      "August",
-                      "September",
-                      "October",
-                      "November",
-                      "December",
-                    ].map((month) => (
-                      <option key={month}>{month}</option>
-                    ))}
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
                   </select>
                 </label>
 
@@ -228,12 +231,13 @@ const handleSubmit = async (e) => {
                   />
                 </label>
 
+                {/* ✅ FIX: Name changed to 'crop_variety' to match state */}
                 <label>
                   Crop Variety
                   <input
                     type="text"
-                    name="variety"
-                    value={formData.variety}
+                    name="crop_variety"
+                    value={formData.crop_variety}
                     onChange={handleChange}
                     required
                   />
@@ -249,12 +253,13 @@ const handleSubmit = async (e) => {
                   />
                 </label>
 
+                {/* ✅ FIX: Name changed to 'yield' to match state */}
                 <label>
                   Yield (kg/hectare)
                   <input
                     type="number"
-                    name="yield_kg_per_hectare"
-                    value={formData.yield_kg_per_hectare}
+                    name="yield"
+                    value={formData.yield}
                     onChange={handleChange}
                   />
                 </label>
@@ -279,11 +284,12 @@ const handleSubmit = async (e) => {
                   />
                 </label>
 
+                {/* ✅ FIX: Name changed to 'msP' to match state */}
                 <label>
                   MSP Available?
                   <select
-                    name="msp_available"
-                    value={formData.msp_available}
+                    name="msP"
+                    value={formData.msP}
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
@@ -300,9 +306,9 @@ const handleSubmit = async (e) => {
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
-                    <option>Low</option>
-                    <option>Medium</option>
-                    <option>High</option>
+                    <option value="1">Low</option>
+                    <option value="2">Medium</option>
+                    <option value="3">High</option>
                   </select>
                 </label>
 
@@ -314,9 +320,9 @@ const handleSubmit = async (e) => {
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
-                    <option>Low</option>
-                    <option>Medium</option>
-                    <option>High</option>
+                    <option value="1">Low</option>
+                    <option value="2">Medium</option>
+                    <option value="3">High</option>
                   </select>
                 </label>
 
@@ -340,11 +346,12 @@ const handleSubmit = async (e) => {
                   />
                 </label>
 
+                {/* ✅ FIX: Name changed to 'govt_scheme_active' to match state */}
                 <label>
                   Govt Scheme Active?
                   <select
-                    name="govt_scheme"
-                    value={formData.govt_scheme}
+                    name="govt_scheme_active"
+                    value={formData.govt_scheme_active}
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
@@ -353,11 +360,12 @@ const handleSubmit = async (e) => {
                   </select>
                 </label>
 
+                {/* ✅ FIX: Name changed to 'cold_storage_available' to match state */}
                 <label>
                   Cold Storage Available?
                   <select
-                    name="cold_storage"
-                    value={formData.cold_storage}
+                    name="cold_storage_available"
+                    value={formData.cold_storage_available}
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
@@ -378,17 +386,6 @@ const handleSubmit = async (e) => {
                     <option value="No">No</option>
                   </select>
                 </label>
-
-                {/* <label>
-                  Market Price (₹/kg)
-                  <input
-                    type="number"
-                    name="market_price"
-                    value={formData.market_price}
-                    onChange={handleChange}
-                    required
-                  />
-                </label> */}
 
                 <button type="submit">Predict</button>
               </form>
@@ -413,8 +410,8 @@ const handleSubmit = async (e) => {
                     {prevPrice !== null ? `₹${prevPrice}` : "—"}
                   </p>
                   <p>
-                    <strong>Accuracy:</strong>{" "}
-                    {accuracy !== null ? `${accuracy}%` : "—"}
+                    <strong>R² Score:</strong>{" "}
+                    {accuracy !== null ? accuracy : "—"}
                   </p>
                   <p>
                     <strong>Time Taken:</strong>{" "}

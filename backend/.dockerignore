@@ -1,0 +1,12 @@
+# Ignore unnecessary files/folders during build context transfer
+venv/
+__pycache__/
+*.pyc
+
+# Ignore large directories that should not be in the final image, 
+# UNLESS your model files are small and directly copied in Dockerfile
+# Agar aapke model files bade hain, aur aap unhe alag se manage nahi kar rahe, 
+# toh isse aapka build tez hoga, lekin push hamesha mushkil rahega.
+# Agar aapko yeh files nahi chahiye toh inko bhi ignore kar dein:
+# data/
+# model/

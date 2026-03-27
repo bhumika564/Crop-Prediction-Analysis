@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-from flask import Flask
 from flask_cors import CORS
 import pandas as pd
 from joblib import load
@@ -7,77 +6,83 @@ from utils.preprocess import preprocess_data
 import numpy as np
 import time
 import json
+import os
 
 app = Flask(__name__)
-CORS(app)  # This enables CORS for all routes and origins
-
+CORS(app)
 
 @app.route('/api/', methods=['GET'])
 def api():
     return jsonify({
-        'predicted_price': "hello",
+        'status': 'success',
+        'message': 'Crop Price Prediction API is running'
     })
 
-@app.route('/api/model/xgboost/predict/', methods=['POST'])
+@app.route('/api/model/xgboost/predict', methods=['POST'])
 def predict_xgboost():
-    print("Catched one request.")
+    try:
+        # 1. Load Model and Metrics
+        model = load('model/model_xgboost.pkl')
+        with open('model/metrics_xgboost.json', 'r') as f:
+            metrics = json.load(f)
+        model_r2 = round(metrics.get('r2', 0), 4)
 
-    model = load('model/model_xgboost.pkl')
-    # Load accuracy (R² score) from JSON
-    with open('model/metrics_xgboost.json', 'r') as f:
-        metrics = json.load(f)
-        model_r2 = round(metrics.get('r2', 0), 4)  # Default to 0 if not found
+        # 2. Get Data and Preprocess
         data = request.get_json()
         df = pd.DataFrame([data])
         df = preprocess_data(df)
 
-    # ✅ Fix: Add weight column with default value
-    df['weight'] = 1
+        # ✅ XGBOOST FIX: Isko 'weight' column training ke waqt mila tha
+        if 'weight' not in df.columns:
+            df['weight'] = 1
+        
+        # 3. Predict
+        start_time = time.time()
+        prediction = model.predict(df)[0]
+        elapsed_time = round(time.time() - start_time, 4)
 
-    # Time tracking
-    start_time = time.time()
-    prediction = model.predict(df)[0]
-    end_time = time.time()
-    elapsed_time = round(end_time - start_time, 4)
+        return jsonify({
+            'predicted_price': round(float(prediction), 2),
+            'elapsed_time_sec': elapsed_time,
+            'model_r2_score': model_r2
+        })
+    except Exception as e:
+        print(f"XGBoost Error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
-    return jsonify({
-        'predicted_price': round(float(prediction), 2),
-        'elapsed_time_sec': elapsed_time,
-        'model_r2_score': model_r2
-    })
-
-@app.route('/api/model/randomforest/predict/', methods=['POST'])
+@app.route('/api/model/randomforest/predict', methods=['POST'])
 def predict_randomforest():
-    print("Catched one request.")
+    try:
+        # 1. Load Model and Metrics
+        model = load('model/model_randomforest.pkl')
+        with open('model/metrics_randomforest.json', 'r') as f:
+            metrics = json.load(f)
+        model_r2 = round(metrics.get('r2', 0), 4)
 
-    model = load('model/model_randomforest.pkl')
-    # Load accuracy (R² score) from JSON
-    with open('model/metrics_randomforest.json', 'r') as f:
-        metrics = json.load(f)
-        model_r2 = round(metrics.get('r2', 0), 4)  # Default to 0 if not found
+        # 2. Get Data and Preprocess
         data = request.get_json()
         df = pd.DataFrame([data])
         df = preprocess_data(df)
 
-    data = request.get_json()
-    df = pd.DataFrame([data])
-    df = preprocess_data(df)
+        # ✅ RANDOM FOREST FIX: Isko training ke waqt 'weight' nahi mila tha
+        # Isliye agar preprocess_data ne weight add kiya hai, toh use hatao
+        if 'weight' in df.columns:
+            df = df.drop(columns=['weight'])
 
-    # ✅ Fix: Add weight column with default value
-    df['weight'] = 1
+        # 3. Predict
+        start_time = time.time()
+        prediction = model.predict(df)[0]
+        elapsed_time = round(time.time() - start_time, 4)
 
-    # Time tracking
-    start_time = time.time()
-    prediction = model.predict(df)[0]
-    end_time = time.time()
-    elapsed_time = round(end_time - start_time, 4)
-
-    return jsonify({
-        'predicted_price': round(float(prediction), 2),
-        'elapsed_time_sec': elapsed_time,
-        'model_r2_score': model_r2
-    })
+        return jsonify({
+            'predicted_price': round(float(prediction), 2),
+            'elapsed_time_sec': elapsed_time,
+            'model_r2_score': model_r2
+        })
+    except Exception as e:
+        print(f"Random Forest Error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
+    # Docker ke liye host 0.0.0.0 hona zaroori hai
+    app.run(debug=False, host='0.0.0.0', port=5000)
