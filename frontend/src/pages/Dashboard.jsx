@@ -86,8 +86,9 @@ function Dashboard() {
     };
 
     // ✅ FIX: Added http://localhost:5000 so frontend knows exactly where to go!
+    // ✅ Naya live internet wala URL
     const selectedModel = modelChoice.toLowerCase(); 
-    const endpoint = `http://localhost:5000/api/model/${selectedModel}/predict`; 
+    const endpoint = `https://crop-prediction-analysis-application.onrender.com/api/model/${selectedModel}/predict`; 
 
     console.log(`Sending request to: ${endpoint}`);
 
