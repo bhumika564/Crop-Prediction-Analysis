@@ -5,12 +5,12 @@
 ---
 
 ## 🌐 Go to Website
-Click here to access the live application: **[CropXpert Live](crop-prediction-analysis-8rxh-pycjmh0qb.vercel.app)**
+Click here to access the live application: **[CropXpert Live](https://crop-prediction-analysis-8rxh-pycjmh0qb.vercel.app)**
 
 ---
 
 ## 🚀 Project Deployment Links
-- **Frontend URL:** [crop-prediction-analysis-8rxh-pycjmh0qb.vercel.app](crop-prediction-analysis-8rxh-pycjmh0qb.vercel.app)
+- **Frontend URL:** [https://crop-prediction-analysis-8rxh-pycjmh0qb.vercel.app](https://crop-prediction-analysis-8rxh-pycjmh0qb.vercel.app)
 - **Backend API:** [https://crop-prediction-analysis-application.onrender.com](https://crop-prediction-analysis-application.onrender.com)
 
 ## ✨ Key Features
